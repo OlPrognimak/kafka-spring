@@ -8,11 +8,13 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.listener.MessageListenerContainer;
+import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +29,8 @@ import java.util.logging.Logger;
  */
 @Service
 public class KafkaConsumerService {
-    private static final Logger logger = Logger.getLogger(KafkaConsumerService.class.toString());
     public static final String INCOMING_LISTENER = "incomingListener";
+    private static final Logger logger = Logger.getLogger(KafkaConsumerService.class.toString());
     @Autowired
     private TradeEntityRepository tradeEntityRepository;
     @Autowired
@@ -47,12 +49,11 @@ public class KafkaConsumerService {
     private String consumerGroupId;
 
     @PostConstruct
-    public void init(){
+    public void init() {
         kafkaAdmin.initialize();
     }
 
     /**
-     *
      * @param tradeModel
      */
     @Transactional
@@ -60,31 +61,32 @@ public class KafkaConsumerService {
             id = INCOMING_LISTENER,
             topics = TopicsConfiguration.INCOMING_TOPIC,
             containerFactory = "tradeListenerContainerFactory"
-        )
-    public void consumeFromIncomingTopic(TradeModel tradeModel){
-
-           try {
-               logger.info("Consume message :"+tradeModel.toString());
-               tradeEntityRepository.save(MapUtility.mapTradeModelToEntity(tradeModel));
-
-           }catch(Exception ex){
-               kafkaProducerService.sendMessageToErrorTopic(tradeModel);
-               stopConsuming();
-               ex.printStackTrace();
-           }
-
+    )
+    public void consumeFromIncomingTopic(TradeModel tradeModel,
+                                         @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition,
+                                         @Header(KafkaHeaders.OFFSET) int offset,
+                                         Acknowledgment ack) {
+        try {
+            logger.info("Offset: " + offset + " :Consume message :" + tradeModel.toString());
+            tradeEntityRepository.save(MapUtility.mapTradeModelToEntity(tradeModel));
+            ack.acknowledge();
+        } catch (Exception ex) {
+            kafkaProducerService.sendMessageToErrorTopic(tradeModel);
+            stopConsuming();
+            ex.printStackTrace();
+        }
     }
 
-    private void stopConsuming(){
+    private void stopConsuming() {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-              executorService.execute(new Runnable() {
-                  @Override
-                  public void run() {
-                      MessageListenerContainer listenerContainer =
-                              kafkaListenerEndpointRegistry.getListenerContainer(INCOMING_LISTENER);
-                      listenerContainer.stop();
-                      logger.info("######## The listener (Incoming consumer) is stopped");
-                  }
-              });
+        executorService.execute(new Runnable() {
+            @Override
+            public void run() {
+                MessageListenerContainer listenerContainer =
+                        kafkaListenerEndpointRegistry.getListenerContainer(INCOMING_LISTENER);
+                listenerContainer.stop();
+                logger.info("######## The listener (Incoming consumer) is stopped");
+            }
+        });
     }
 }

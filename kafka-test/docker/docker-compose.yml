@@ -129,7 +129,7 @@ services:
       APPLICATION_SECRET: "random-secret"
 
   kafka-trade:
-    image: prognimak.app/kafka-trade:01
+    image: prognimak.app/kafka-trade:10
     networks:
       nw_prognimak: null
     ports:
