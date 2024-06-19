@@ -10,6 +10,6 @@ Contains example of code for working with kafka server over the Spring-Framework
 3. If the data is valid, it is saved to the database.
 4. If the data is not valid, it is saved to an error topic.
 
-[!(Scenarion of process)](https://github.com/OlPrognimak/kafka-spring/blob/master/doc/scenario.png)
+
 <img src="https://github.com/OlPrognimak/kafka-spring/blob/master/doc/scenario.png">
 
