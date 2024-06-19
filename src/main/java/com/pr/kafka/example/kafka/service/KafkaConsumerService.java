@@ -18,7 +18,7 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -63,7 +63,7 @@ public class KafkaConsumerService {
             containerFactory = "tradeListenerContainerFactory"
     )
     public void consumeFromIncomingTopic(TradeModel tradeModel,
-                                         @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition,
+                                         @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                                          @Header(KafkaHeaders.OFFSET) int offset,
                                          Acknowledgment ack) {
         try {

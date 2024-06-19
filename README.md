@@ -11,4 +11,4 @@ Contains example of code for working with kafka server over the Spring-Framework
 4. If the data is not valid, it is saved to an error topic.
 
 
-![Scenarion of process] (https://github.com/OlPrognimak/kafka-spring/blob/master/kafka-test/doc/process.pdf)
+![Scenarion of process] (https://github.com/OlPrognimak/kafka-spring/blob/master/kafka-test/doc/scenario.png)
