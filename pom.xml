@@ -17,9 +17,10 @@
 	<properties>
 		<java.version>21</java.version>
 		<spring-cloud.version>2023.0.2</spring-cloud.version>
-		<lo4j2.version>2.8.2</lo4j2.version>
+		<log4j2.version>2.20.0</log4j2.version>
 		<hibernate.version>6.5.2.Final</hibernate.version>
 		<hibernate-entitymanager.version>5.6.15.Final</hibernate-entitymanager.version>
+		<h2.version>2.1.214</h2.version>
 		<jakarta.validator.api.version>3.1.0</jakarta.validator.api.version>
 		<jakarta.hibernate.validator.version>8.0.1.Final</jakarta.hibernate.validator.version>
 		<lombok.version>1.18.32</lombok.version>
@@ -56,6 +57,10 @@
 			<artifactId>spring-kafka</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
@@ -104,10 +109,21 @@
 			<groupId>org.hibernate.validator</groupId>
 			<artifactId>hibernate-validator</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- log4j2 -->
+			<dependency>
+				<groupId>org.apache.logging.log4j</groupId>
+				<artifactId>log4j-api</artifactId>
+				<version>${log4j2.version}</version>
+			</dependency>
 			<!-- Hibernate -->
 			<dependency>
 				<groupId>org.hibernate</groupId>
@@ -155,6 +171,12 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			<dependency>
+				<groupId>com.h2database</groupId>
+				<artifactId>h2</artifactId>
+				<version>${h2.version}</version>
+				<scope>test</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -169,6 +191,16 @@
 						<exclude>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
+						</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>
+							**/IT.java
 						</exclude>
 					</excludes>
 				</configuration>

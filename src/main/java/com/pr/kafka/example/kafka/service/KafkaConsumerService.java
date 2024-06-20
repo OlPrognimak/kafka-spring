@@ -5,6 +5,8 @@ import com.pr.kafka.example.model.TradeModel;
 import com.pr.kafka.example.persistency.repository.TradeEntityRepository;
 import com.pr.kafka.example.utils.MapUtility;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.annotation.PostConstruct;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
 
 /**
  * @author Oleksandr Prognimak
@@ -30,7 +31,7 @@ import java.util.logging.Logger;
 @Service
 public class KafkaConsumerService {
     public static final String INCOMING_LISTENER = "incomingListener";
-    private static final Logger logger = Logger.getLogger(KafkaConsumerService.class.toString());
+    private static final Logger logger = LogManager.getLogger(KafkaConsumerService.class.toString());
     @Autowired
     private TradeEntityRepository tradeEntityRepository;
     @Autowired
@@ -41,9 +42,9 @@ public class KafkaConsumerService {
     @Autowired
     private NewTopic errorTopic;
     //@Qualifier("org.springframework.kafka.config.internalKafkaListenerEndpointRegistry")
-    @Autowired()
+    @Autowired
     private KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
-    @Autowired()
+    @Autowired
     private KafkaProducerService kafkaProducerService;
     @Value(value = "${kafka.consumer.group.id}")
     private String consumerGroupId;
@@ -68,12 +69,16 @@ public class KafkaConsumerService {
                                          Acknowledgment ack) {
         try {
             logger.info("Offset: " + offset + " :Consume message :" + tradeModel.toString());
+
+            if(tradeModel.getExpired() != 'N') {
+                throw new RuntimeException("Trade Expired");
+            }
             tradeEntityRepository.save(MapUtility.mapTradeModelToEntity(tradeModel));
             ack.acknowledge();
         } catch (Exception ex) {
             kafkaProducerService.sendMessageToErrorTopic(tradeModel);
             stopConsuming();
-            ex.printStackTrace();
+            logger.error(ex);
         }
     }
 
