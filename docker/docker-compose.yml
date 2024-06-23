@@ -109,7 +109,7 @@ services:
       POSTGRES_PASSWORD: test
       POSTGRES_USER: test
     hostname: postgres
-    image: library/postgres:11
+    image: postgres:14
     networks:
       nw_prognimak: null
     ports:
@@ -129,12 +129,13 @@ services:
       APPLICATION_SECRET: "random-secret"
 
   kafka-trade:
-    image: prognimak.app/kafka-trade:10
+    image: prognimak.app/kafka-trade:01
     networks:
       nw_prognimak: null
     ports:
       - 9080:8080
     environment:
+      DDL_AUTO: create
       KAFKA_BOOTSTRAP_ADDRESS: 'kafka-01:9092'
       APP_KAFKA_REPLICATION_FACTOR: 2
       SPRING_DATASOURCE_URL: 'jdbc:postgresql://postgres:5432/test_db'

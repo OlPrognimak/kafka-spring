@@ -1,7 +1,9 @@
 package com.pr.kafka.example.kafka.service;
 
 import com.pr.kafka.example.model.TradeModel;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -18,13 +20,13 @@ import static com.pr.kafka.example.kafka.configuration.TopicsConfiguration.INCOM
  * @created 11.01.2021 - 17:58
  */
 @Service
+@RequiredArgsConstructor
+@EnableKafka
 public class KafkaProducerService {
   private static final Logger logger = Logger.getLogger(KafkaProducerService.class.getName());
 
-    @Autowired
-    private KafkaTemplate<String, TradeModel> kafkaTemplate;
-    @Autowired
-    private KafkaAdmin kafkaAdmin;
+    private final KafkaTemplate<String, TradeModel> kafkaTemplate;
+    private final KafkaAdmin kafkaAdmin;
 
     @PostConstruct
     public void init(){

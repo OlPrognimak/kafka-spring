@@ -34,6 +34,7 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Version;
+import java.io.Serializable;
 import java.sql.Date;
 import java.time.Instant;
 
@@ -42,7 +43,7 @@ import java.time.Instant;
  * @created 11.01.2021 - 17:40
  */
 @MappedSuperclass
-public class AbstractEntity {
+public class AbstractEntity implements Serializable {
     @Version
     private Integer entityVersion;
     private Date created;

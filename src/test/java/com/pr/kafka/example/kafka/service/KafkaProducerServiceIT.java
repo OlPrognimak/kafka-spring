@@ -22,6 +22,8 @@ class KafkaProducerServiceIT {
 
     @Test
     void sendMessage() {
+
+
         TradeModel tradeModel = TradeModel.builder()
                 .tradeId("123")
                 .version(1)

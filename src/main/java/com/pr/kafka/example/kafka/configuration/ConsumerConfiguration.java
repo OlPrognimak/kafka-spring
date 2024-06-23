@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.KafkaListenerContainerFactory;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
@@ -33,13 +34,14 @@ public class ConsumerConfiguration {
 
     @Bean
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, TradeModel>>
-    tradeListenerContainerFactory() {
+    tradeListenerContainerFactory(ConsumerFactory<String, TradeModel> consumerFactory) {
         ConcurrentKafkaListenerContainerFactory<String, TradeModel> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
+        factory.setConsumerFactory(consumerFactory);
         factory.setConcurrency(3);
         factory.getContainerProperties().setPollTimeout(3000);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
+        factory.setAutoStartup(false);
         return factory;
     }
 
@@ -64,13 +66,15 @@ public class ConsumerConfiguration {
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, TradeModel>
-    defaultListenerContainerFactory() {
+//    @Bean
+//    public ConcurrentKafkaListenerContainerFactory<String, TradeModel>
+//    defaultListenerContainerFactory() {
+//
+//        ConcurrentKafkaListenerContainerFactory<String, TradeModel> factory =
+//                new ConcurrentKafkaListenerContainerFactory<>();
+//        factory.setConsumerFactory(consumerFactory());
+//        return factory;
+//    }
 
-        ConcurrentKafkaListenerContainerFactory<String, TradeModel> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
-        return factory;
-    }
+
 }

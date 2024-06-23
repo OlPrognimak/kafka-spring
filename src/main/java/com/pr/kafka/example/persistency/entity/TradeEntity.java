@@ -2,8 +2,9 @@ package com.pr.kafka.example.persistency.entity;
 
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @author Oleksandr Prognimak
@@ -27,4 +28,17 @@ public class TradeEntity extends AbstractEntity {
     private Date maturityDate;
     private Date createdDate;
     private char expired;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TradeEntity that = (TradeEntity) o;
+        return version == that.version && expired == that.expired && Objects.equals(Id, that.Id) && Objects.equals(tradeId, that.tradeId) && Objects.equals(counterPartyId, that.counterPartyId) && Objects.equals(bookId, that.bookId) && Objects.equals(maturityDate, that.maturityDate) && Objects.equals(createdDate, that.createdDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Id, tradeId, version, counterPartyId, bookId, maturityDate, createdDate, expired);
+    }
 }

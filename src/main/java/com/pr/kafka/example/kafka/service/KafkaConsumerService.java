@@ -4,6 +4,7 @@ import com.pr.kafka.example.kafka.configuration.TopicsConfiguration;
 import com.pr.kafka.example.model.TradeModel;
 import com.pr.kafka.example.persistency.repository.TradeEntityRepository;
 import com.pr.kafka.example.utils.MapUtility;
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,23 +30,24 @@ import java.util.concurrent.Executors;
  * @created 11.01.2021 - 17:59
  */
 @Service
+@RequiredArgsConstructor
 public class KafkaConsumerService {
     public static final String INCOMING_LISTENER = "incomingListener";
     private static final Logger logger = LogManager.getLogger(KafkaConsumerService.class.toString());
+
+    private final TradeEntityRepository tradeEntityRepository;
+
+    private final KafkaAdmin kafkaAdmin;
     @Autowired
-    private TradeEntityRepository tradeEntityRepository;
+    @Qualifier("incomingTopic")
+    private  NewTopic incomingTopic;
     @Autowired
-    private KafkaAdmin kafkaAdmin;
-    @Autowired()
-    private NewTopic incomingTopic;
     @Qualifier("errorTopic")
-    @Autowired
-    private NewTopic errorTopic;
-    //@Qualifier("org.springframework.kafka.config.internalKafkaListenerEndpointRegistry")
-    @Autowired
-    private KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
-    @Autowired
-    private KafkaProducerService kafkaProducerService;
+    private  NewTopic errorTopic;
+   // @Qualifier("org.springframework.kafka.config.internalKafkaListenerEndpointRegistry")
+    private final KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry;
+    private final KafkaProducerService kafkaProducerService;
+
     @Value(value = "${kafka.consumer.group.id}")
     private String consumerGroupId;
 
@@ -57,12 +59,12 @@ public class KafkaConsumerService {
     /**
      * @param tradeModel
      */
-    @Transactional
     @KafkaListener(
             id = INCOMING_LISTENER,
             topics = TopicsConfiguration.INCOMING_TOPIC,
             containerFactory = "tradeListenerContainerFactory"
     )
+    @Transactional
     public void consumeFromIncomingTopic(TradeModel tradeModel,
                                          @Header(KafkaHeaders.RECEIVED_PARTITION) int partition,
                                          @Header(KafkaHeaders.OFFSET) int offset,
@@ -75,7 +77,7 @@ public class KafkaConsumerService {
             }
             tradeEntityRepository.save(MapUtility.mapTradeModelToEntity(tradeModel));
             ack.acknowledge();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             kafkaProducerService.sendMessageToErrorTopic(tradeModel);
             stopConsuming();
             logger.error(ex);
